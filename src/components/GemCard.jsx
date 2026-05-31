@@ -10,6 +10,7 @@ export default function GemCard({ gem }) {
         <img 
           src={gem.image_url || 'https://images.unsplash.com/photo-1599725427295-b90302faeb25?auto=format&fit=crop&q=80'} 
           alt={gem.name} 
+          loading="lazy"
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-4 left-4 flex gap-2">
