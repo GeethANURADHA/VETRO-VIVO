@@ -45,7 +45,7 @@ export default function Home() {
       setFeaturedGems(gemsData || []);
       setCategories(catData || []);
     } catch (err) {
-      console.error("Error fetching home data:", err);
+      console.error("Error fetching home data:", err.message || JSON.stringify(err));
     } finally {
       setLoading(false);
     }
