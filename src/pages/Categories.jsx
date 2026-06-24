@@ -1,34 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import CategoryCard from '../components/CategoryCard';
 import { Sparkles, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useCategories } from '../hooks/useCategories';
 
 export default function Categories() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { categories, fetchCategories, loading, error } = useCategories();
 
   useEffect(() => {
     fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-        
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchCategories]);
 
   if (loading) {
     return (

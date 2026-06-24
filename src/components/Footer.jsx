@@ -20,7 +20,7 @@ export default function Footer() {
               to="/"
               className="flex items-center gap-2 text-sapphire-800 dark:text-gold-500 mb-4"
             >
-              <Gem className="h-8 w-8" />
+              <img src="/logo.jpg" alt="VETRO VIVO Logo" className="h-10 w-auto object-contain" />
               <span className="font-serif text-2xl font-bold tracking-tight">
                 VETRO VIVO
               </span>
@@ -32,28 +32,34 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://www.facebook.com/share/1GkMay2B3f/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 bg-white dark:bg-slate-800 rounded-lg text-slate-400 hover:text-sapphire-600 dark:hover:text-gold-500 shadow-sm transition-all hover:-translate-y-1"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/ceylon_orenzia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 bg-white dark:bg-slate-800 rounded-lg text-slate-400 hover:text-sapphire-600 dark:hover:text-gold-500 shadow-sm transition-all hover:-translate-y-1"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="#"
-                className="p-2 bg-white dark:bg-slate-800 rounded-lg text-slate-400 hover:text-sapphire-600 dark:hover:text-gold-500 shadow-sm transition-all hover:-translate-y-1"
+                href="https://wa.me/393926864440"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-white dark:bg-slate-800 rounded-lg text-slate-400 hover:text-green-500 dark:hover:text-green-400 shadow-sm transition-all hover:-translate-y-1"
               >
-                <Twitter className="h-5 w-5" />
+                <Phone className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="mailto:vetrovivogems@gmail.com"
                 className="p-2 bg-white dark:bg-slate-800 rounded-lg text-slate-400 hover:text-sapphire-600 dark:hover:text-gold-500 shadow-sm transition-all hover:-translate-y-1"
               >
-                <Linkedin className="h-5 w-5" />
+                <Mail className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -105,11 +111,11 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                 <Mail className="h-5 w-5 text-sapphire-600 dark:text-gold-500" />
-                <span>vetrovivo.lk@gmail.com</span>
+                <span>vetrovivogems@gmail.com</span>
               </li>
               <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                 <Phone className="h-5 w-5 text-sapphire-600 dark:text-gold-500" />
-                <span>+94 77 XXXXXXX</span>
+                <span>+39 392 686 4440</span>
               </li>
               <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                 <MapPin className="h-5 w-5 text-sapphire-600 dark:text-gold-500" />

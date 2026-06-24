@@ -1,51 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { useGems } from '../hooks/useGems';
 
 export default function ManageGems() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [gems, setGems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { gems, fetchGems, deleteGem, loading, error } = useGems();
 
   useEffect(() => {
     fetchGems();
-  }, []);
-
-  const fetchGems = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('gems')
-        .select(`
-          *,
-          categories (
-            name
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setGems(data || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchGems]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this gemstone?')) return;
 
     try {
-      const { error } = await supabase
-        .from('gems')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      setGems(gems.filter(gem => gem.id !== id));
+      await deleteGem(id);
     } catch (err) {
       alert('Error deleting gem: ' + err.message);
     }

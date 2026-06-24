@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, ShieldCheck, Mail, Edit2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { usersApi } from '../services/api';
 
 export default function ManageUsers() {
   const [admins, setAdmins] = useState([]);
@@ -15,13 +15,7 @@ export default function ManageUsers() {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .in('role', ['admin', 'main_admin'])
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
+      const data = await usersApi.getAllAdmins();
       setAdmins(data || []);
     } catch (err) {
       setError(err.message);
@@ -34,15 +28,7 @@ export default function ManageUsers() {
     if (!window.confirm('Are you sure you want to remove this admin? This will only remove their admin privileges in the users table, and delete their auth account if applicable.')) return;
 
     try {
-      // Typically you'd also want to delete from auth.users via an edge function, 
-      // but deleting from the public.users table or changing role is a start.
-      // Easiest is to delete from public table which cascades if foreign key is set up right
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await usersApi.deleteAdmin(id);
       setAdmins(admins.filter(a => a.id !== id));
     } catch (err) {
       alert('Error deleting admin: ' + err.message);

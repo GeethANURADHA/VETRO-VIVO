@@ -75,7 +75,7 @@ export default function Navbar() {
               to="/"
               className="flex items-center gap-2 text-sapphire-800 dark:text-gold-500"
             >
-              <Gem className="h-8 w-8" />
+              <img src="/logo.jpg" alt="VETRO VIVO Logo" className="h-10 w-auto object-contain" />
               <span className="font-serif text-2xl font-bold tracking-tight hidden lg:block">
                 VETRO VIVO
               </span>

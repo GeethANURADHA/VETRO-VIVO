@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { usersApi } from '../services/api';
 
 export default function AdminForm() {
   const { id } = useParams();
@@ -27,13 +27,7 @@ export default function AdminForm() {
 
   const fetchAdmin = async () => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
-      if (error) throw error;
+      const data = await usersApi.getById(id);
       if (data) {
         setFormData({
           name: data.name,
@@ -63,42 +57,14 @@ export default function AdminForm() {
 
     try {
       if (isEditing) {
-        // Just update role and name in the users table.
-        const { error } = await supabase
-          .from('users')
-          .update({ name: formData.name, role: formData.role })
-          .eq('id', id);
-          
-        if (error) throw error;
+        await usersApi.updateAdmin(id, { name: formData.name, role: formData.role });
       } else {
-        // 1. Create User in Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (authError) throw authError;
-
-        // Note: The id is returned in authData.user.id. 
-        // 2. Insert into users table
-        if (authData?.user) {
-          const { error: dbError } = await supabase
-            .from('users')
-            .insert([{
-              id: authData.user.id,
-              name: formData.name,
-              email: formData.email,
-              role: formData.role
-            }]);
-
-          if (dbError) throw dbError;
-        }
+        await usersApi.createAdmin(formData.email, formData.password, formData.name, formData.role);
       }
 
       navigate('/admin/users');
     } catch (err) {
       setError(err.message || 'An error occurred while saving.');
-    } finally {
       setLoading(false);
     }
   };

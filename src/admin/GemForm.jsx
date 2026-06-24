@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Upload, Loader2, Save } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useGems } from '../hooks/useGems';
+import { useCategories } from '../hooks/useCategories';
 
 export default function GemForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = !!id;
 
-  const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditing);
-  const [categories, setCategories] = useState([]);
+  const { categories, fetchCategories } = useCategories();
+  const { createGem, updateGem, fetchGem, uploadImage, loading, error, setError } = useGems();
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -30,26 +30,14 @@ export default function GemForm() {
   useEffect(() => {
     fetchCategories();
     if (isEditing) {
-      fetchGem();
+      loadGem();
     }
-  }, [id]);
+  }, [id, fetchCategories]);
 
-  const fetchCategories = async () => {
-    const { data, error } = await supabase.from('categories').select('id, name, type');
-    if (!error && data) {
-      setCategories(data);
-    }
-  };
-
-  const fetchGem = async () => {
+  const loadGem = async () => {
     try {
-      const { data, error } = await supabase
-        .from('gems')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
-      if (error) throw error;
+      setFetching(true);
+      const data = await fetchGem(id);
       if (data) {
         setFormData({
           name: data.name,
@@ -65,7 +53,7 @@ export default function GemForm() {
         if (data.image_url) setImagePreview(data.image_url);
       }
     } catch (err) {
-      setError(err.message);
+      // Error handled by hook
     } finally {
       setFetching(false);
     }
@@ -80,36 +68,15 @@ export default function GemForm() {
     }
   };
 
-  const uploadImage = async () => {
-    if (!imageFile) return formData.image_url;
-
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `gems/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('gem-images')
-      .upload(filePath, imageFile);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage
-      .from('gem-images')
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     try {
       let finalImageUrl = formData.image_url;
       
       if (imageFile) {
-        finalImageUrl = await uploadImage();
+        finalImageUrl = await uploadImage(imageFile);
       }
 
       const gemData = {
@@ -125,22 +92,14 @@ export default function GemForm() {
       };
 
       if (isEditing) {
-        const { error } = await supabase
-          .from('gems')
-          .update(gemData)
-          .eq('id', id);
-        if (error) throw error;
+        await updateGem(id, gemData);
       } else {
-        const { error } = await supabase
-          .from('gems')
-          .insert([gemData]);
-        if (error) throw error;
+        await createGem(gemData);
       }
 
       navigate('/admin/gems');
     } catch (err) {
-      setError(err.message || 'An error occurred while saving.');
-      setLoading(false);
+      // Error is stored in hook and shown in UI
     }
   };
 

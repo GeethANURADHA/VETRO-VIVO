@@ -3,53 +3,22 @@ import { Search, ChevronRight, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import GemCard from "../components/GemCard";
 import CategoryCard from "../components/CategoryCard";
-import { supabase } from "../lib/supabase";
+import { useGems } from "../hooks/useGems";
+import { useCategories } from "../hooks/useCategories";
+import { GemCardSkeleton, CategoryCardSkeleton } from "../components/Skeletons";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [featuredGems, setFeaturedGems] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { gems: featuredGems, fetchFeaturedGems, loading: gemsLoading } = useGems();
+  const { categories, fetchCategories, loading: categoriesLoading } = useCategories();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchHomeData();
-  }, []);
+    fetchFeaturedGems(3);
+    fetchCategories();
+  }, [fetchFeaturedGems, fetchCategories]);
 
-  const fetchHomeData = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch latest 3 gems
-      const { data: gemsData, error: gemsError } = await supabase
-        .from("gems")
-        .select(
-          `
-          *,
-          categories(name)
-        `,
-        )
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      if (gemsError) throw gemsError;
-
-      // Fetch categories
-      const { data: catData, error: catError } = await supabase
-        .from("categories")
-        .select("*")
-        .limit(4);
-
-      if (catError) throw catError;
-
-      setFeaturedGems(gemsData || []);
-      setCategories(catData || []);
-    } catch (err) {
-      console.error("Error fetching home data:", err.message || JSON.stringify(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = gemsLoading || categoriesLoading;
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -63,11 +32,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1588665792900-54f0a28f7dcb?auto=format&fit=crop&q=80&w=1920"
-            alt="Hero Gemstones"
-            className="w-full h-full object-cover"
-          />
+
           <div className="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80" />
         </div>
 
@@ -127,8 +92,10 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-10 w-10 animate-spin text-sapphire-600 dark:text-gold-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <GemCardSkeleton key={i} />
+              ))}
             </div>
           ) : featuredGems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -167,12 +134,14 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-10 w-10 animate-spin text-sapphire-600 dark:text-gold-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <CategoryCardSkeleton key={i} />
+              ))}
             </div>
           ) : categories.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {categories.map((category) => (
+              {categories.slice(0, 4).map((category) => (
                 <CategoryCard key={category.id} category={category} />
               ))}
             </div>

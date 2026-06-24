@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import GemCard from '../components/GemCard';
 import { Search, SlidersHorizontal, X, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useGems } from '../hooks/useGems';
+import { useCategories } from '../hooks/useCategories';
 
 const CARAT_TIERS = [
   { label: 'Points (Below 1.00 Carat)', min: 0, max: 0.99 },
@@ -25,10 +26,8 @@ export default function Catalog() {
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || '';
   
-  const [gems, setGems] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { gems, fetchGems, loading: gemsLoading, error: gemsError } = useGems();
+  const { categories, fetchCategories, loading: categoriesLoading } = useCategories();
   
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
@@ -38,6 +37,7 @@ export default function Catalog() {
     max: searchParams.get('maxPrice') || '' 
   });
   const [selectedCaratTier, setSelectedCaratTier] = useState(searchParams.get('caratTier') || '');
+  const [sortBy, setSortBy] = useState('Newest Arrivals');
 
   const [expandedSections, setExpandedSections] = useState({
     precious: true,
@@ -48,69 +48,22 @@ export default function Catalog() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
   useEffect(() => {
-    fetchGems();
-  }, [searchParams]);
+    const filters = {
+      search: searchParams.get('search') || '',
+      category: searchParams.get('category') || '',
+      minPrice: searchParams.get('minPrice') || '',
+      maxPrice: searchParams.get('maxPrice') || '',
+      caratTier: searchParams.get('caratTier') || '',
+      sortBy
+    };
+    fetchGems(filters);
+  }, [searchParams, sortBy, fetchGems]);
 
-  const fetchCategories = async () => {
-    const { data, error } = await supabase.from('categories').select('id, name, type');
-    if (!error && data) {
-      setCategories(data);
-    }
-  };
-
-  const fetchGems = async () => {
-    try {
-      setLoading(true);
-      const search = searchParams.get('search') || '';
-      const categoryId = searchParams.get('category') || '';
-      const minPrice = searchParams.get('minPrice') || '';
-      const maxPrice = searchParams.get('maxPrice') || '';
-      const caratTierLabel = searchParams.get('caratTier') || '';
-
-      let query = supabase
-        .from('gems')
-        .select(`
-          *,
-          categories(name)
-        `);
-
-      if (search) {
-        query = query.ilike('name', `%${search}%`);
-      }
-
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
-
-      if (minPrice) {
-        query = query.gte('price', parseFloat(minPrice));
-      }
-
-      if (maxPrice) {
-        query = query.lte('price', parseFloat(maxPrice));
-      }
-
-      if (caratTierLabel) {
-        const tier = CARAT_TIERS.find(t => t.label === caratTierLabel);
-        if (tier) {
-          query = query.gte('carat', tier.min).lte('carat', tier.max);
-        }
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setGems(data || []);
-    } catch (err) {
-      console.error('Error fetching gems:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = gemsLoading || categoriesLoading;
+  const error = gemsError;
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
@@ -306,7 +259,11 @@ export default function Catalog() {
               Showing <span className="text-slate-900 dark:text-white font-bold">{gems.length}</span> precious stones
             </span>
             <div className="flex items-center gap-4">
-              <select className="bg-slate-50 dark:bg-slate-950 border-none text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-gold-500 block px-6 py-2 cursor-pointer outline-none">
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-950 border-none text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-gold-500 block px-6 py-2 cursor-pointer outline-none"
+              >
                 <option>Newest Arrivals</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>

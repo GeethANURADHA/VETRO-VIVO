@@ -1,7 +1,56 @@
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react';
+import { inquiriesApi } from '../services/api';
 
 export default function Contact() {
-  const waContactUrl = `https://wa.me/9477XXXXXXX?text=Hello, I have an inquiry about a gemstone.`;
+  const waContactUrl = `https://wa.me/393926864440?text=Hello, I have an inquiry about a gemstone.`;
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.firstName || !formData.email || !formData.message) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await inquiriesApi.create({
+        user_name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        message: `Subject: ${formData.subject || 'N/A'}\n\n${formData.message}`,
+        gem_id: null
+      });
+      setSuccess(true);
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err) {
+      setError(err.message || 'Failed to send message.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -39,7 +88,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-medium text-slate-900 dark:text-white mb-1">Phone / WhatsApp</h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-2">+94 77 XXXXXXX</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-2">+39 392 686 4440</p>
                   <a 
                     href={waContactUrl} 
                     target="_blank" 
@@ -57,7 +106,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-medium text-slate-900 dark:text-white mb-1">Email</h3>
-                  <p className="text-slate-600 dark:text-slate-400">vetrovivo.lk@gmail.com</p>
+                  <p className="text-slate-600 dark:text-slate-400">vetrovivogems@gmail.com</p>
                 </div>
               </div>
             </div>
@@ -76,22 +125,41 @@ export default function Contact() {
         {/* Contact Form */}
         <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800">
           <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-white mb-8">Send us a Message</h2>
-          <form className="space-y-6">
+          
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5" />
+              <span>Thank you! Your message has been received. We will get back to you shortly.</span>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-400 rounded-xl">
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">First Name</label>
+                <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">First Name *</label>
                 <input 
                   type="text" 
-                  id="name" 
+                  id="firstName" 
+                  value={formData.firstName}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-sapphire-500 text-slate-900 dark:text-white"
                   placeholder="John"
+                  required
                 />
               </div>
               <div>
-                <label htmlFor="lastname" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Last Name</label>
+                <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Last Name</label>
                 <input 
                   type="text" 
-                  id="lastname" 
+                  id="lastName" 
+                  value={formData.lastName}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-sapphire-500 text-slate-900 dark:text-white"
                   placeholder="Doe"
                 />
@@ -99,12 +167,15 @@ export default function Contact() {
             </div>
             
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email Address *</label>
               <input 
                 type="email" 
                 id="email" 
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-sapphire-500 text-slate-900 dark:text-white"
                 placeholder="john@example.com"
+                required
               />
             </div>
 
@@ -113,26 +184,33 @@ export default function Contact() {
               <input 
                 type="text" 
                 id="subject" 
+                value={formData.subject}
+                onChange={handleChange}
                 className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-sapphire-500 text-slate-900 dark:text-white"
                 placeholder="Inquiry about a gemstone"
               />
             </div>
             
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Message</label>
+              <label htmlFor="message" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Message *</label>
               <textarea 
                 id="message" 
                 rows="5" 
+                value={formData.message}
+                onChange={handleChange}
                 className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-sapphire-500 text-slate-900 dark:text-white resize-none"
                 placeholder="How can we help you?"
+                required
               ></textarea>
             </div>
             
             <button 
               type="submit" 
-              className="w-full py-4 bg-sapphire-600 hover:bg-sapphire-700 dark:bg-gold-600 dark:hover:bg-gold-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2"
+              disabled={loading}
+              className="w-full py-4 bg-sapphire-600 hover:bg-sapphire-700 dark:bg-gold-600 dark:hover:bg-gold-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Send className="h-5 w-5" /> Send Message
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+              {loading ? 'Sending...' : 'Send Message'}
             </button>
           </form>
         </div>

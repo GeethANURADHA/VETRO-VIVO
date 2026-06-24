@@ -4,8 +4,8 @@
 
 -- 1. CLEANUP
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-DROP FUNCTION IF EXISTS public.handle_new_user();
-DROP FUNCTION IF EXISTS public.is_admin();
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.is_admin() CASCADE;
 DROP TABLE IF EXISTS public.inquiries CASCADE;
 DROP TABLE IF EXISTS public.gems CASCADE;
 DROP TABLE IF EXISTS public.categories CASCADE;
@@ -114,6 +114,10 @@ VALUES ('gem-images', 'gem-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 12. STORAGE POLICIES
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can upload" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can delete" ON storage.objects;
+
 -- Allow public viewing of images
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'gem-images');
 

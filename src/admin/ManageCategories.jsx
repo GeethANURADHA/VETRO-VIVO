@@ -1,49 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Plus, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { useCategories } from '../hooks/useCategories';
 
 export default function ManageCategories() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { categories, fetchCategories, deleteCategory, loading, error } = useCategories();
 
   useEffect(() => {
     fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      // Fetch categories with count of related gems
-      const { data, error } = await supabase
-        .from('categories')
-        .select(`
-          *,
-          gems (count)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchCategories]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this category? Any gems in this category will become uncategorized.')) return;
 
     try {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      setCategories(categories.filter(cat => cat.id !== id));
+      await deleteCategory(id);
     } catch (err) {
       alert('Error deleting category: ' + err.message);
     }

@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Upload, Loader2, Save } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useCategories } from '../hooks/useCategories';
 
 export default function CategoryForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = !!id;
 
-  const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditing);
+  const { createCategory, updateCategory, fetchCategory, uploadImage, loading, error, setError } = useCategories();
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -22,19 +21,14 @@ export default function CategoryForm() {
 
   useEffect(() => {
     if (isEditing) {
-      fetchCategory();
+      loadCategory();
     }
   }, [id]);
 
-  const fetchCategory = async () => {
+  const loadCategory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
-      if (error) throw error;
+      setFetching(true);
+      const data = await fetchCategory(id);
       if (data) {
         setFormData({
           name: data.name,
@@ -44,7 +38,7 @@ export default function CategoryForm() {
         if (data.image_url) setImagePreview(data.image_url);
       }
     } catch (err) {
-      setError(err.message);
+      // Error handled by hook
     } finally {
       setFetching(false);
     }
@@ -59,35 +53,15 @@ export default function CategoryForm() {
     }
   };
 
-  const uploadImage = async () => {
-    if (!imageFile) return formData.image_url;
-
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `categories/${Math.random()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('gem-images')
-      .upload(fileName, imageFile);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage
-      .from('gem-images')
-      .getPublicUrl(fileName);
-
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     try {
       let finalImageUrl = formData.image_url;
       
       if (imageFile) {
-        finalImageUrl = await uploadImage();
+        finalImageUrl = await uploadImage(imageFile);
       }
 
       const categoryData = {
@@ -97,23 +71,14 @@ export default function CategoryForm() {
       };
 
       if (isEditing) {
-        const { error } = await supabase
-          .from('categories')
-          .update(categoryData)
-          .eq('id', id);
-        if (error) throw error;
+        await updateCategory(id, categoryData);
       } else {
-        const { error } = await supabase
-          .from('categories')
-          .insert([categoryData]);
-        if (error) throw error;
+        await createCategory(categoryData);
       }
 
       navigate('/admin/categories');
     } catch (err) {
-      setError(err.message || 'An error occurred while saving.');
-    } finally {
-      setLoading(false);
+      // Error is handled by hook and shown in UI
     }
   };
 

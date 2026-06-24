@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -10,41 +10,15 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { useGems } from "../hooks/useGems";
 
 export default function GemDetail() {
   const { id } = useParams();
-  const [gem, setGem] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { gem, fetchGem, loading, error } = useGems();
 
   useEffect(() => {
-    fetchGem();
-  }, [id]);
-
-  const fetchGem = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("gems")
-        .select(
-          `
-          *,
-          categories(name)
-        `,
-        )
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      setGem(data);
-    } catch (err) {
-      console.error("Error fetching gem:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchGem(id);
+  }, [id, fetchGem]);
 
   const shareGem = () => {
     if (navigator.share) {

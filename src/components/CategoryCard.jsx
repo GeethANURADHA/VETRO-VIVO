@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function CategoryCard({ category }) {
+function CategoryCard({ category }) {
   return (
     <Link 
       to={`/catalog?category=${category.id}`}
@@ -21,3 +22,5 @@ export default function CategoryCard({ category }) {
     </Link>
   );
 }
+
+export default memo(CategoryCard);

@@ -1,8 +1,10 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function GemCard({ gem }) {
-  // Use WhatsApp buy format spec
-  const waBuyUrl = `https://wa.me/9477XXXXXXX?text=I want to buy ${gem.name} ${gem.carat} carat gemstone.`;
+function GemCard({ gem }) {
+  // Use WhatsApp buy format spec with the client's official WhatsApp number
+  const whatsappNumber = '393926864440';
+  const waBuyUrl = `https://wa.me/${whatsappNumber}?text=Hello, I am interested in purchasing the ${encodeURIComponent(gem.name)} (${gem.carat} ct) gemstone.`;
 
   return (
     <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
@@ -61,3 +63,5 @@ export default function GemCard({ gem }) {
     </div>
   );
 }
+
+export default memo(GemCard);
