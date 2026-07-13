@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, ChevronRight, Loader2 } from "lucide-react";
+import { Search, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import GemCard from "../components/GemCard";
 import CategoryCard from "../components/CategoryCard";
@@ -12,7 +12,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const { gems: featuredGems, fetchFeaturedGems, loading: gemsLoading } = useGems();
   const { categories, fetchCategories, loading: categoriesLoading } = useCategories();
-  const { settings, loading: settingsLoading } = useHomepageSettings();
+  const { settings } = useHomepageSettings(); // never blocks — serves cache instantly
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +20,8 @@ export default function Home() {
     fetchCategories();
   }, [fetchFeaturedGems, fetchCategories]);
 
-  const loading = gemsLoading || categoriesLoading;
+  // Each section manages its own loading independently
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -133,7 +134,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {loading ? (
+          {gemsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {Array.from({ length: 3 }).map((_, i) => (
                 <GemCardSkeleton key={i} />
@@ -175,7 +176,7 @@ export default function Home() {
             </p>
           </div>
 
-          {loading ? (
+          {categoriesLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {Array.from({ length: 4 }).map((_, i) => (
                 <CategoryCardSkeleton key={i} />
