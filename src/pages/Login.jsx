@@ -12,6 +12,7 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent multiple clicks/enters
     setLoading(true);
     setError(null);
 
