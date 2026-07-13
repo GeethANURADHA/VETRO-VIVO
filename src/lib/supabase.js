@@ -15,17 +15,7 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: false,
-    },
-    global: {
-      // 8-second hard timeout on every fetch — prevents silent hangs
-      fetch: (url, options = {}) => {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 8000);
-        return fetch(url, { ...options, signal: controller.signal }).finally(() =>
-          clearTimeout(timer)
-        );
-      },
-    },
+    }
   }
 )
 

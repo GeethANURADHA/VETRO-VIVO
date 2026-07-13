@@ -7,14 +7,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser]       = useState(null);
   const [role, setRole]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const fetchingRef           = useRef(false);
-  // Keep a ref so the async fetchRole can see the latest "mounted" state
   const mountedRef            = useRef(true);
 
   const fetchRole = useCallback(async (currUser) => {
+    if (!mountedRef.current) return;
+    setLoading(true); // Ensure loading is true while we fetch
     console.log('AuthProvider: Querying users table for role...');
     try {
-      // maybeSingle() returns null (not PGRST116) when no row is found
       const { data, error } = await supabase
         .from('users')
         .select('role')
@@ -35,7 +34,6 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // No row yet – create a default profile (only for brand-new auth users)
       console.log('AuthProvider: No profile found. Creating default profile...');
       const { error: insError } = await supabase.from('users').insert({
         id:    currUser.id,
@@ -51,7 +49,6 @@ export const AuthProvider = ({ children }) => {
       if (mountedRef.current) setRole('user');
     } finally {
       if (mountedRef.current) {
-        console.log('AuthProvider: Setting loading to false.');
         setLoading(false);
       }
     }
@@ -59,41 +56,24 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     mountedRef.current = true;
-    console.log('AuthProvider: Mounted, setting up auth listener...');
-
-    // Safety net – fires only if no auth event arrives at all (very rare network issue)
-    // Set to 15 s so it does NOT race with the normal DB query
+    
+    // Fallback timer to prevent getting stuck if Supabase fails silently
     const safetyTimer = setTimeout(() => {
-      if (mountedRef.current) {
-        console.warn('AuthProvider: Safety timeout triggered. Forcing loading to false.');
+      if (mountedRef.current && loading) {
         setLoading(false);
       }
-    }, 15000);
+    }, 10000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mountedRef.current) return;
-        console.log(`AuthProvider: Received event [${event}]. Session exists:`, !!session);
-
-        // Clear safety timer as soon as we receive any auth event
         clearTimeout(safetyTimer);
 
-        if (
-          event === 'INITIAL_SESSION' ||
-          event === 'SIGNED_IN' ||
-          event === 'TOKEN_REFRESHED'
-        ) {
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
             setUser(session.user);
-            if (!fetchingRef.current) {
-              fetchingRef.current = true;
-              await fetchRole(session.user);
-              fetchingRef.current = false;
-            } else {
-              console.log('AuthProvider: fetchRole already in progress, skipping.');
-            }
+            await fetchRole(session.user);
           } else {
-            // No session — unauthenticated state
             setUser(null);
             setRole(null);
             setLoading(false);
@@ -119,7 +99,6 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAdmin: role === 'admin' || role === 'main_admin',
     signOut: async () => {
-      console.log('AuthProvider: Initiating sign out...');
       await supabase.auth.signOut();
       setUser(null);
       setRole(null);
@@ -138,3 +117,4 @@ export const useAuth = () => {
   if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
+
