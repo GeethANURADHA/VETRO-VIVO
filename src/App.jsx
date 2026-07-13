@@ -32,24 +32,51 @@ const LoadingFallback = () => (
 
 const NotFound = () => <div className="p-8 text-center text-red-500">404 - Not Found</div>;
 
+function AdminFixHelper() {
+  const { user, role } = useAuth();
+  
+  if (user?.email === 'vetrovivo.lk@gmail.com' && role === 'user') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl max-w-md w-full shadow-2xl border border-red-500">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Admin Access Blocked</h2>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">
+            Your account is currently registered as a standard "user" in the database because the SQL fix script was not run.
+          </p>
+          <button 
+            onClick={async () => {
+              try {
+                const { error } = await supabase
+                  .from('users')
+                  .update({ role: 'main_admin' })
+                  .eq('id', user.id);
+                  
+                if (error) {
+                  alert("Failed to update: " + error.message);
+                } else {
+                  alert("Success! Your account has been upgraded. The page will now reload.");
+                  window.location.href = '/admin';
+                }
+              } catch (err) {
+                alert("Error: " + err.message);
+              }
+            }}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-colors"
+          >
+            Click Here to Force Upgrade to Admin
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 function App() {
-  // Temporary auto-fix: if logged in as the admin email, force the role upgrade
-  // since the RLS policy allows users to update their own rows.
-  useEffect(() => {
-    const fixRole = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email === 'vetrovivo.lk@gmail.com') {
-        await supabase
-          .from('users')
-          .update({ role: 'main_admin' })
-          .eq('id', session.user.id);
-      }
-    };
-    fixRole();
-  }, []);
 
   return (
     <AuthProvider>
+      <AdminFixHelper />
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
