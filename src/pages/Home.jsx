@@ -10,17 +10,17 @@ import { GemCardSkeleton, CategoryCardSkeleton } from "../components/Skeletons";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [gemsError, setGemsError] = useState(null);
+  const [categoriesError, setCategoriesError] = useState(null);
   const { gems: featuredGems, fetchFeaturedGems, loading: gemsLoading } = useGems();
   const { categories, fetchCategories, loading: categoriesLoading } = useCategories();
-  const { settings } = useHomepageSettings(); // never blocks — serves cache instantly
+  const { settings } = useHomepageSettings();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchFeaturedGems(3);
-    fetchCategories();
+    fetchFeaturedGems(3).catch(e => setGemsError(e.message));
+    fetchCategories().catch(e => setCategoriesError(e.message));
   }, [fetchFeaturedGems, fetchCategories]);
-
-  // Each section manages its own loading independently
 
 
   const handleSearch = (e) => {
@@ -140,6 +140,15 @@ export default function Home() {
                 <GemCardSkeleton key={i} />
               ))}
             </div>
+          ) : gemsError ? (
+            <div className="text-center py-16">
+              <p className="text-red-500 mb-3 font-medium">Could not load gems</p>
+              <p className="text-slate-400 text-sm mb-6">{gemsError}</p>
+              <button onClick={() => { setGemsError(null); fetchFeaturedGems(3).catch(e => setGemsError(e.message)); }}
+                className="px-6 py-2 bg-sapphire-600 hover:bg-sapphire-700 text-white rounded-lg text-sm transition-colors">
+                Retry
+              </button>
+            </div>
           ) : featuredGems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredGems.map((gem) => (
@@ -147,8 +156,10 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-500">
-              No gems available at the moment.
+            <div className="text-center py-16">
+              <p className="text-4xl mb-4">💎</p>
+              <p className="text-slate-500 font-medium">No gems listed yet.</p>
+              <p className="text-slate-400 text-sm mt-2">Add gems via the admin panel to display them here.</p>
             </div>
           )}
 
@@ -182,6 +193,15 @@ export default function Home() {
                 <CategoryCardSkeleton key={i} />
               ))}
             </div>
+          ) : categoriesError ? (
+            <div className="text-center py-16">
+              <p className="text-red-500 mb-3 font-medium">Could not load categories</p>
+              <p className="text-slate-400 text-sm mb-6">{categoriesError}</p>
+              <button onClick={() => { setCategoriesError(null); fetchCategories().catch(e => setCategoriesError(e.message)); }}
+                className="px-6 py-2 bg-sapphire-600 hover:bg-sapphire-700 text-white rounded-lg text-sm transition-colors">
+                Retry
+              </button>
+            </div>
           ) : categories.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {categories.slice(0, 4).map((category) => (
@@ -189,8 +209,10 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-500">
-              No categories found.
+            <div className="text-center py-16">
+              <p className="text-4xl mb-4">🗂️</p>
+              <p className="text-slate-500 font-medium">No categories yet.</p>
+              <p className="text-slate-400 text-sm mt-2">Add categories via the admin panel to display them here.</p>
             </div>
           )}
         </div>
