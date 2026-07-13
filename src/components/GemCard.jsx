@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 function GemCard({ gem }) {
   // Use WhatsApp buy format spec with the client's official WhatsApp number
-  const whatsappNumber = '393936864440';
+  const whatsappNumber = '94712316378';
   const waBuyUrl = `https://wa.me/${whatsappNumber}?text=Hello, I am interested in purchasing the ${encodeURIComponent(gem.name)} (${gem.carat} ct) gemstone.`;
 
   return (

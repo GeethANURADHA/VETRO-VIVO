@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import { inquiriesApi } from '../services/api';
 
 export default function Contact() {
-  const waContactUrl = `https://wa.me/393936864440?text=Hello, I have an inquiry about a gemstone.`;
+  const waContactUrl = `https://wa.me/94712316378?text=Hello, I have an inquiry about a gemstone.`;
 
   const [formData, setFormData] = useState({
     firstName: '',

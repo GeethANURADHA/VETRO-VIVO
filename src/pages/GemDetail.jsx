@@ -61,7 +61,7 @@ export default function GemDetail() {
   const whatsappMessage = encodeURIComponent(
     `Hi, I'm interested in the ${gem.name} (ID: ${gem.id}) listed on your website. Is it still available?`,
   );
-  const whatsappUrl = `https://wa.me/94771234567?text=${whatsappMessage}`; // Replace with actual phone number
+  const whatsappUrl = `https://wa.me/94712316378?text=${whatsappMessage}`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
