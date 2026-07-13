@@ -130,3 +130,42 @@ CREATE POLICY "Admins can upload" ON storage.objects FOR INSERT WITH CHECK (
 CREATE POLICY "Admins can delete" ON storage.objects FOR DELETE USING (
   bucket_id = 'gem-images' AND (public.is_admin())
 );
+
+-- ==========================================
+-- 13. HOMEPAGE SETTINGS TABLE
+-- ==========================================
+DROP TABLE IF EXISTS public.homepage_settings CASCADE;
+
+CREATE TABLE public.homepage_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  hero_bg_image_url TEXT,
+  hero_welcome_text TEXT DEFAULT 'Welcome to VETRO VIVO',
+  hero_headline TEXT DEFAULT 'We bring the enchantment and purity of Sri Lanka''s rarest gemstones directly to Naples and all of Europe. Every stone we offer tells a story of earth, light, and authenticity.',
+  hero_paragraph TEXT DEFAULT 'Why Choose Us? Certified Authenticity: Each gemstone is sourced directly by experts with generations of experience in the gem trade and is accompanied by official, recognized certificates. Total Transparency: From the mine to the final cut, we guarantee 100% natural, untreated, and ethically sourced stones. Local Presence, Global Trust: Based in Naples, we provide the security of direct customer support, insured shipping, and a guaranteed return policy under European laws. Explore our collection and find the gemstone that will illuminate your story.',
+  hero_overlay_color TEXT DEFAULT '#000000',
+  hero_overlay_opacity INTEGER DEFAULT 65 CHECK (hero_overlay_opacity >= 0 AND hero_overlay_opacity <= 100),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- Enable RLS
+ALTER TABLE public.homepage_settings ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Public read homepage_settings" ON public.homepage_settings 
+  FOR SELECT USING (true);
+
+CREATE POLICY "Admin write homepage_settings" ON public.homepage_settings 
+  FOR ALL USING (public.is_admin());
+
+-- Insert default row
+INSERT INTO public.homepage_settings (id, hero_welcome_text, hero_headline, hero_paragraph, hero_overlay_color, hero_overlay_opacity)
+VALUES (
+  1, 
+  'Welcome to VETRO VIVO', 
+  'We bring the enchantment and purity of Sri Lanka''s rarest gemstones directly to Naples and all of Europe. Every stone we offer tells a story of earth, light, and authenticity.', 
+  'Why Choose Us? Certified Authenticity: Each gemstone is sourced directly by experts with generations of experience in the gem trade and is accompanied by official, recognized certificates. Total Transparency: From the mine to the final cut, we guarantee 100% natural, untreated, and ethically sourced stones. Local Presence, Global Trust: Based in Naples, we provide the security of direct customer support, insured shipping, and a guaranteed return policy under European laws. Explore our collection and find the gemstone that will illuminate your story.', 
+  '#000000', 
+  65
+)
+ON CONFLICT (id) DO NOTHING;
+

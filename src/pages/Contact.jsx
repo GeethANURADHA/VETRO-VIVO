@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import { inquiriesApi } from '../services/api';
 
 export default function Contact() {
-  const waContactUrl = `https://wa.me/393926864440?text=Hello, I have an inquiry about a gemstone.`;
+  const waContactUrl = `https://wa.me/393936864440?text=Hello, I have an inquiry about a gemstone.`;
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -73,12 +73,28 @@ export default function Contact() {
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-slate-900 dark:text-white mb-1">Our Showroom</h3>
+                  <h3 className="font-medium text-slate-900 dark:text-white mb-1">Sri Lanka Office</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    123 Gemstone Avenue,<br />
-                    Colombo 03,<br />
-                    Sri Lanka
+                    Ratnapura,<br />
+                    Sri Lanka,<br />
+                    70000
                   </p>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">+94 71 231 6378</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="bg-sapphire-50 dark:bg-sapphire-900/30 p-3 rounded-full text-sapphire-600 dark:text-gold-500">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-slate-900 dark:text-white mb-1">Italy Office</h3>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Naples,<br />
+                    Italy,<br />
+                    80137
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">+39 393 686 4440</p>
                 </div>
               </div>
 
@@ -87,8 +103,8 @@ export default function Contact() {
                   <Phone className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-slate-900 dark:text-white mb-1">Phone / WhatsApp</h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-2">+39 392 686 4440</p>
+                  <h3 className="font-medium text-slate-900 dark:text-white mb-1">WhatsApp</h3>
+                  <p className="text-slate-600 dark:text-slate-400 mb-2">+39 393 686 4440</p>
                   <a 
                     href={waContactUrl} 
                     target="_blank" 

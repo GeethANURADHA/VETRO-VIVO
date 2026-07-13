@@ -7,7 +7,8 @@ import {
   Users, 
   LogOut,
   Menu,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -26,6 +27,7 @@ export default function AdminLayout() {
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { name: 'Manage Gems', path: '/admin/gems', icon: Gem },
     { name: 'Categories', path: '/admin/categories', icon: FolderTree },
+    { name: 'Homepage Settings', path: '/admin/settings', icon: Settings },
   ];
 
   if (role === 'main_admin') {

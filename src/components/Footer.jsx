@@ -48,7 +48,7 @@ export default function Footer() {
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="https://wa.me/393926864440"
+                href="https://wa.me/393936864440"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-white dark:bg-slate-800 rounded-lg text-slate-400 hover:text-green-500 dark:hover:text-green-400 shadow-sm transition-all hover:-translate-y-1"
@@ -110,16 +110,24 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
-                <Mail className="h-5 w-5 text-sapphire-600 dark:text-gold-500" />
+                <Mail className="h-5 w-5 text-sapphire-600 dark:text-gold-500 flex-shrink-0" />
                 <span>vetrovivogems@gmail.com</span>
               </li>
-              <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
-                <Phone className="h-5 w-5 text-sapphire-600 dark:text-gold-500" />
-                <span>+39 392 686 4440</span>
+              <li className="flex items-start gap-3 text-slate-600 dark:text-slate-400">
+                <MapPin className="h-5 w-5 text-sapphire-600 dark:text-gold-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Sri Lanka</span><br />
+                  Ratnapura, 70000<br />
+                  <span className="text-sm">+94 71 231 6378</span>
+                </div>
               </li>
-              <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
-                <MapPin className="h-5 w-5 text-sapphire-600 dark:text-gold-500" />
-                <span>Colombo, Sri Lanka</span>
+              <li className="flex items-start gap-3 text-slate-600 dark:text-slate-400">
+                <MapPin className="h-5 w-5 text-sapphire-600 dark:text-gold-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Italy</span><br />
+                  Naples, 80137<br />
+                  <span className="text-sm">+39 393 686 4440</span>
+                </div>
               </li>
             </ul>
           </div>

@@ -580,3 +580,110 @@ export const statsApi = {
     }
   }
 };
+
+/**
+ * Homepage Settings API services
+ * Uses Supabase table `homepage_settings` with localStorage fallback
+ */
+const SETTINGS_LOCAL_KEY = 'vetro_vivo_homepage_settings';
+
+const DEFAULT_SETTINGS = {
+  hero_bg_image_url: null,
+  hero_welcome_text: 'Welcome to VETRO VIVO',
+  hero_headline:
+    "We bring the enchantment and purity of Sri Lanka's (ancient Ceylon) rarest gemstones directly to Naples and all of Europe. Every stone we offer tells a story of earth, light, and authenticity.",
+  hero_paragraph:
+    'Why Choose Us?\n\nCertified Authenticity: Each gemstone is sourced directly by experts with generations of experience in the gem trade and is accompanied by official, recognized certificates.\nTotal Transparency: From the mine to the final cut, we guarantee 100% natural, untreated, and ethically sourced stones.\nLocal Presence, Global Trust: Based in Naples, we provide the security of direct customer support, insured shipping, and a guaranteed return policy under European laws.\n\nExplore our collection and find the gemstone that will illuminate your story.',
+  hero_overlay_color: '#000000',
+  hero_overlay_opacity: 65,
+};
+
+export const settingsApi = {
+  /**
+   * Fetch homepage settings (row id=1).
+   * Falls back to localStorage then defaults when the DB table is missing.
+   */
+  async getSettings() {
+    try {
+      const { data, error } = await supabase
+        .from('homepage_settings')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      logger.warn('Falling back to localStorage for homepage settings', error);
+      const cached = localStorage.getItem(SETTINGS_LOCAL_KEY);
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch {
+          /* corrupted – fall through */
+        }
+      }
+      return { ...DEFAULT_SETTINGS };
+    }
+  },
+
+  /**
+   * Upsert homepage settings (always row id=1).
+   * Also persists to localStorage as a backup.
+   */
+  async updateSettings(settings) {
+    try {
+      // Always store locally for fast fallback
+      localStorage.setItem(SETTINGS_LOCAL_KEY, JSON.stringify(settings));
+
+      const payload = {
+        ...settings,
+        id: 1,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('homepage_settings')
+        .upsert(payload, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      logger.warn('Failed to persist homepage settings to DB – saved locally', error);
+      // Return the settings from localStorage as a best-effort
+      return settings;
+    }
+  },
+
+  /**
+   * Upload a hero background image to the gem-images bucket.
+   */
+  async uploadHeroImage(file) {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `hero/hero_bg_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gem-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('gem-images')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error) {
+      logger.error('Failed to upload hero background image', error);
+      throw error;
+    }
+  },
+
+  /** Return default settings for reference */
+  getDefaults() {
+    return { ...DEFAULT_SETTINGS };
+  },
+};

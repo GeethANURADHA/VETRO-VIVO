@@ -21,6 +21,7 @@ const ManageUsers = lazy(() => import('./admin/ManageUsers'));
 const GemForm = lazy(() => import('./admin/GemForm'));
 const CategoryForm = lazy(() => import('./admin/CategoryForm'));
 const AdminForm = lazy(() => import('./admin/AdminForm'));
+const HomepageSettings = lazy(() => import('./admin/HomepageSettings'));
 
 const LoadingFallback = () => (
   <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-slate-950">
@@ -56,6 +57,7 @@ function App() {
                 <Route path="categories" element={<ManageCategories />} />
                 <Route path="categories/add" element={<CategoryForm />} />
                 <Route path="categories/edit/:id" element={<CategoryForm />} />
+                <Route path="settings" element={<HomepageSettings />} />
               </Route>
             </Route>
             

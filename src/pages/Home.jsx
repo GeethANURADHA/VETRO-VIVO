@@ -1,16 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search, ChevronRight, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import GemCard from "../components/GemCard";
 import CategoryCard from "../components/CategoryCard";
 import { useGems } from "../hooks/useGems";
 import { useCategories } from "../hooks/useCategories";
+import { useHomepageSettings } from "../hooks/useHomepageSettings";
 import { GemCardSkeleton, CategoryCardSkeleton } from "../components/Skeletons";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const { gems: featuredGems, fetchFeaturedGems, loading: gemsLoading } = useGems();
   const { categories, fetchCategories, loading: categoriesLoading } = useCategories();
+  const { settings, loading: settingsLoading } = useHomepageSettings();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,26 +29,66 @@ export default function Home() {
     }
   };
 
+  // ── Compute hero styles from settings ──
+  const heroBackground = useMemo(() => {
+    if (!settings) return { backgroundColor: '#6e7380' };
+    if (settings.hero_bg_image_url) {
+      return {
+        backgroundImage: `url(${settings.hero_bg_image_url})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      };
+    }
+    return { backgroundColor: '#6e7380' };
+  }, [settings]);
+
+  const overlayStyle = useMemo(() => {
+    if (!settings) return { backgroundColor: 'rgba(0,0,0,0.65)' };
+    const hex = settings.hero_overlay_color || '#000000';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const a = (settings.hero_overlay_opacity ?? 65) / 100;
+    return { backgroundColor: `rgba(${r},${g},${b},${a})` };
+  }, [settings]);
+
+  const welcomeText = settings?.hero_welcome_text || 'Welcome to VETRO VIVO';
+  const headline =
+    settings?.hero_headline ||
+    "We bring the enchantment and purity of Sri Lanka's (ancient Ceylon) rarest gemstones directly to Naples and all of Europe. Every stone we offer tells a story of earth, light, and authenticity.";
+  const paragraph =
+    settings?.hero_paragraph ||
+    'Why Choose Us?\n\nCertified Authenticity: Each gemstone is sourced directly by experts with generations of experience in the gem trade and is accompanied by official, recognized certificates.\nTotal Transparency: From the mine to the final cut, we guarantee 100% natural, untreated, and ethically sourced stones.\nLocal Presence, Global Trust: Based in Naples, we provide the security of direct customer support, insured shipping, and a guaranteed return policy under European laws.\n\nExplore our collection and find the gemstone that will illuminate your story.';
+
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
+      {/* ═══════════ Hero Section ═══════════ */}
+      <section
+        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden"
+        style={heroBackground}
+      >
+        {/* Dynamic overlay */}
+        <div className="absolute inset-0 z-0" style={overlayStyle} />
 
-          <div className="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-          <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 animate-fade-in-up">
-            Unearth the Elegance of <br className="hidden md:block" />
-            <span className="text-gold-400">Ceylon Gemstones</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-3xl mx-auto font-light">
-            Discover a curated collection of fully authenticated, ethically
-            sourced precious stones from the world's most renowned mines.
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20 pb-16">
+          {/* Welcome badge */}
+          <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-white/70 font-medium mb-6 animate-fade-in-up">
+            {welcomeText}
           </p>
 
-          <div className="max-w-2xl mx-auto">
+          {/* Luxury headline */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-gold-400 mb-8 animate-fade-in-up leading-tight max-w-4xl mx-auto">
+            {headline}
+          </h1>
+
+          {/* Supporting paragraph */}
+          <div className="text-base sm:text-lg md:text-xl text-slate-200/90 mb-12 max-w-3xl mx-auto font-light leading-relaxed animate-fade-in-up whitespace-pre-line">
+            {paragraph}
+          </div>
+
+          {/* Search bar */}
+          <div className="max-w-2xl mx-auto animate-fade-in-up">
             <form
               onSubmit={handleSearch}
               className="relative flex items-center"
